@@ -1,0 +1,6 @@
+---
+
+git_deploy_name:
+git_deploy_base_dir: /service
+git_deploy_packages:
+  - git
