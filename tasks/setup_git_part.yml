@@ -54,6 +54,7 @@
   register: t_git_deploy_repositories_post_receive_hooks
 
 # # simple version
+# # > update template with item.item.name
 # - name: deploy post-receive hooks
 #   template:
 #     src: git-hooks/post-receive
