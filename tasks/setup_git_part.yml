@@ -1,0 +1,76 @@
+---
+
+- include_tasks: accounts.yml
+  vars:
+    accounts_groups:
+      - name: "{{ git_deploy_group }}"
+        gid: "{{ git_deploy_group_id | d(git_deploy_user_id) | d(omit) }}"
+    accounts_users:
+      - name: "{{ git_deploy_user }}"
+        uid: "{{ git_deploy_user_id | d(omit) }}"
+        group: "{{ git_deploy_group }}"
+        comment: "{{ git_deploy_user }}"
+        home: "{{ git_deploy_home }}"
+        home_mode: "{{ git_deploy_home_mode | d('0750') }}"
+        password: '*'
+        shell: "{{ git_deploy_shell }}"
+        ssh_auth_key: "{{ git_deploy_ssh_auth_key | d(None) }}"
+
+- include_tasks: workspace.yml
+  vars:
+    workspace_items: "{{ git_deploy_workspace_items }}"
+
+- name: deploy git shell commands
+  template:
+    src: git-shell-commands/{{ item }}
+    dest: "{{ git_deploy_git_shell_commands }}/{{ item }}"
+    owner: "{{ git_deploy_user }}"
+    group: "{{ git_deploy_group }}"
+    mode: "0755"
+  loop:
+    - no-interactive-login
+
+- name: init git repositories
+  command:
+    cmd: "git init --bare --shared='{{ item.mode | d(git_deploy_repository_mode) }}' {{ git_deploy_home }}/{{ item.name }}"
+  args:
+    creates: "{{ git_deploy_home }}/{{ item.name }}/HEAD"
+  become_user: "{{ git_deploy_user }}"
+  loop: "{{ git_deploy_repositories }}"
+
+- name: init git work target
+  file:
+    path: "{{ git_deploy_app_dir }}/{{ item.name }}"
+    owner: "{{ git_deploy_user }}"
+    group: "{{ git_deploy_group }}"
+    mode: "0750"
+    state: directory
+  loop: "{{ git_deploy_repositories }}"
+
+- name: stat post-receive hooks
+  stat:
+    path: "{{ git_deploy_home }}/{{ item.name }}/hooks/post-receive"
+  loop: "{{ git_deploy_repositories }}"
+  register: t_git_deploy_repositories_post_receive_hooks
+
+# # simple version
+# - name: deploy post-receive hooks
+#   template:
+#     src: git-hooks/post-receive
+#     dest: "{{ git_deploy_home }}/{{ item.item.name }}/hooks/post-receive"
+#     owner: "{{ git_deploy_user }}"
+#     group: "{{ git_deploy_group }}"
+#     mode: "0750"
+#   loop: "{{ t_git_deploy_repositories_post_receive_hooks.results }}"
+#   when: not item.stat.exists
+
+# zip version
+- name: deploy post-receive hooks
+  template:
+    src: git-hooks/post-receive
+    dest: "{{ git_deploy_home }}/{{ item.0.name }}/hooks/post-receive"
+    owner: "{{ git_deploy_user }}"
+    group: "{{ git_deploy_group }}"
+    mode: "0750"
+  loop: "{{ git_deploy_repositories | zip(t_git_deploy_repositories_post_receive_hooks.results) | list }}"
+  when: not item.1.stat.exists

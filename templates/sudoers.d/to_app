@@ -1,0 +1,2 @@
+Defaults!/usr/bin/git env_keep="GIT_DIR GIT_WORK_TREE"
+git ALL=({{ git_deploy_app_user }}) NOPASSWD: /usr/bin/git

@@ -1,0 +1,22 @@
+#!/bin/sh
+
+currentUser=`whoami`
+currentServer=`hostname`
+repoDirectory="{{ git_deploy_home }}/{{ item.0.name }}"
+pubDirectory="{{ git_deploy_app_dir }}/{{ item.0.name }}"
+echo "Hello! I'm $currentUser at $currentServer"
+echo "I'm going to publish from"
+echo "   $repoDirectory"
+echo "to"
+echo "   $pubDirectory"
+rc=0
+git --git-dir=$repoDirectory --work-tree=$pubDirectory checkout master -f
+if [ "$?" -ne "0" ]; then
+    echo "GOSH! GIT FAILED!!!!"
+    rc=1
+fi
+
+if [ $rc -eq 0 ]; then
+    echo "Don't worry, be happy: everything worked out like a charm ;)"
+fi
+exit $rc

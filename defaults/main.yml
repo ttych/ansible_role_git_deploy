@@ -2,5 +2,35 @@
 
 git_deploy_name:
 git_deploy_base_dir: /service
+git_deploy_dir: "{{ git_deploy_base_dir }}/{{ git_deploy_name }}"
 git_deploy_packages:
   - git
+
+git_deploy_user: "{{ git_deploy_name }}"
+git_deploy_group: "{{ git_deploy_user }}"
+git_deploy_home: "{{ git_deploy_dir }}/{{ git_deploy_user }}"
+git_deploy_shell: "{{ git_deploy_git_shell }}"
+git_deploy_git_shell_commands: "{{ git_deploy_home }}/git-shell-commands"
+git_deploy_workspace_items:
+  - path: "{{ git_deploy_dir }}"
+    owner: "root"
+    group: "{{ git_deploy_group }}"
+  - path: "{{ git_deploy_home }}"
+    owner: "{{ git_deploy_user }}"
+    group: "{{ git_deploy_group }}"
+  - path: "{{ git_deploy_git_shell_commands }}"
+    owner: "{{ git_deploy_user }}"
+    group: "{{ git_deploy_group }}"
+
+git_deploy_repositories: []
+git_deploy_repository_mode: '0640'
+
+git_deploy_run_user: "{{ git_deploy_name }}_run"
+git_deploy_run_home: "{{ git_deploy_dir }}/{{ git_deploy_run_user }}"
+git_deploy_run_workspace_items: []
+
+git_deploy_app_dir: "{{ git_deploy_dir }}/app"
+git_deploy_app_workspace_items:
+  - path: "{{ git_deploy_app_dir }}"
+    owner: "{{ git_deploy_user }}"
+    group: "{{ git_deploy_group }}"

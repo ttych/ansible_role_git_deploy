@@ -1,0 +1,19 @@
+---
+
+- include_tasks: accounts.yml
+  vars:
+    accounts_groups: []
+    accounts_users:
+      - name: "{{ git_deploy_run_user }}"
+        uid: "{{ git_deploy_run_user_id | d(omit) }}"
+        group: "{{ git_deploy_group }}"
+        comment: "{{ git_deploy_run_user }}"
+        home: "{{ git_deploy_run_home }}"
+        home_mode: "{{ git_deploy_run_home_mode | d('0750') }}"
+        password: '*'
+        shell: "{{ git_deploy_run_shell | d('/bin/sh') }}"
+        ssh_auth_key: "{{ git_deploy_run_ssh_auth_key | d(None) }}"
+
+- include_tasks: workspace.yml
+  vars:
+    workspace_items: "{{ git_deploy_run_workspace_items }}"
